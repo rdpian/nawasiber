@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d18">
+<title>Nawasiber — Community Cyber Safety</title>
+<meta name="description" content="Nawasiber Community Intelligence: cek laporan penipuan, laporkan ancaman digital, dan pantau tren ancaman.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{ink:"#080d18",panel:"#101827",line:"#263449",cyanx:"#38bdf8"}}}}</script>
+<style>
+body{background:radial-gradient(ellipse at 85% -5%,rgba(8,145,178,.17),transparent 38%),#080d18}
+.gridbg{background-image:linear-gradient(rgba(148,163,184,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.03) 1px,transparent 1px);background-size:32px 32px}
+.panel{background:rgba(16,24,39,.88);border:1px solid #263449;border-radius:18px}
+.field{width:100%;background:#0b1220;border:1px solid #34445a;border-radius:11px;padding:12px 13px;color:#e2e8f0;outline:none}
+.field:focus{border-color:#38bdf8;box-shadow:0 0 0 3px #38bdf81c}
+.btn{background:linear-gradient(120deg,#0284c7,#2563eb);border-radius:11px;padding:11px 16px;color:white;font-weight:650}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.navbtn{padding:10px 13px;border:1px solid transparent;border-radius:10px;color:#94a3b8;font-size:13px}
+.navbtn.active{background:#0c2537;border-color:#155e75;color:#7dd3fc}
+.muted{color:#94a3b8}.tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.hidden{display:none!important}
+</style>
+</head>
+<body class="min-h-screen text-slate-200 gridbg">
+<header class="sticky top-0 z-30 border-b border-line bg-ink/90 backdrop-blur-xl">
+ <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+  <a href="#" class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl border border-cyan-300/30 bg-cyan-400/10 text-cyan-300 grid place-items-center text-xl">⬡</div><div><div class="font-black tracking-[.17em] text-white">NAWASIBER<span class="text-cyan-400">.</span></div><div class="tag text-slate-500">Community Cyber Safety</div></div></a>
+  <div class="flex items-center gap-2"><span id="session-label" class="hidden sm:block text-xs text-slate-500">Guest session</span><button id="auth-open" class="text-xs border border-line rounded-lg px-3 py-2 hover:border-cyan-400/50">Masuk / Daftar</button><button id="logout" class="hidden text-xs border border-line rounded-lg px-3 py-2">Keluar</button></div>
+ </div>
+</header>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-7">
+ <section class="mb-7">
+  <div class="tag text-cyan-300 mb-3">Community-driven threat intelligence · Kartika Cyber 2026</div>
+  <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+   <div><h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-white">Keamanan digital,<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500">dijaga bersama.</span></h1><p class="muted mt-3 max-w-2xl text-sm leading-relaxed">Periksa laporan komunitas, laporkan indikasi penipuan, dan bangun kewaspadaan digital melalui intelijen ancaman yang dimoderasi.</p></div>
+   <div class="flex gap-2"><button class="btn" data-go="report">＋ Buat laporan</button><button class="border border-line rounded-xl px-4 py-2 text-sm" data-go="check">Cek ancaman</button></div>
+  </div>
+ </section>
+
+ <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+  <div class="panel p-4"><div class="tag muted">Laporan terverifikasi</div><div id="stat-total" class="text-3xl font-bold mt-2 text-white">—</div><div class="text-xs text-slate-500 mt-1">Data komunitas</div></div>
+  <div class="panel p-4"><div class="tag muted">Nomor / rekening</div><div id="stat-identity" class="text-3xl font-bold mt-2 text-white">—</div><div class="text-xs text-slate-500 mt-1">Kategori identifier</div></div>
+  <div class="panel p-4"><div class="tag muted">Domain / website</div><div id="stat-web" class="text-3xl font-bold mt-2 text-white">—</div><div class="text-xs text-slate-500 mt-1">Kategori web threat</div></div>
+  <div class="panel p-4"><div class="tag muted">Laporan menunggu</div><div class="text-3xl font-bold mt-2 text-cyan-300">Moderated</div><div class="text-xs text-slate-500 mt-1">Verifikasi sebelum publikasi</div></div>
+ </section>
+
+ <nav class="panel p-2 flex flex-wrap gap-1 mb-5">
+  <button class="navbtn active" data-tab="overview">◈ Overview</button><button class="navbtn" data-tab="check">⌕ Cek Ancaman</button><button class="navbtn" data-tab="report">＋ Laporkan</button><button class="navbtn" data-tab="judol">⌁ Judol Scanner</button><button class="navbtn" data-tab="admin">⚙ Verification Center</button>
+ </nav>
+
+ <section id="tab-overview" class="tabpage grid lg:grid-cols-[1.3fr_.7fr] gap-5">
+  <div class="panel p-5 sm:p-6"><div class="flex justify-between items-center"><div><div class="tag text-cyan-300">Public intelligence</div><h2 class="text-xl font-semibold text-white mt-1">Bagaimana Nawasiber bekerja</h2></div><span class="text-xs text-emerald-300 border border-emerald-400/20 bg-emerald-400/5 rounded-full px-3 py-1">Community model</span></div>
+   <div class="grid sm:grid-cols-2 gap-3 mt-5">
+    <div class="rounded-xl bg-ink border border-line p-4"><div class="text-cyan-300 text-xl">01 / Detect</div><h3 class="font-semibold mt-2">Temukan indikasi</h3><p class="text-xs muted mt-1 leading-relaxed">Cek identifier atau scan domain untuk menemukan sinyal awal dari sumber publik.</p></div>
+    <div class="rounded-xl bg-ink border border-line p-4"><div class="text-cyan-300 text-xl">02 / Report</div><h3 class="font-semibold mt-2">Laporkan dengan bukti</h3><p class="text-xs muted mt-1 leading-relaxed">Komunitas menyampaikan kronologi, sumber, dan bukti yang relevan.</p></div>
+    <div class="rounded-xl bg-ink border border-line p-4"><div class="text-cyan-300 text-xl">03 / Verify</div><h3 class="font-semibold mt-2">Moderasi laporan</h3><p class="text-xs muted mt-1 leading-relaxed">Moderator memeriksa kelengkapan, konteks, duplikasi, dan kredibilitas bukti.</p></div>
+    <div class="rounded-xl bg-ink border border-line p-4"><div class="text-cyan-300 text-xl">04 / Protect</div><h3 class="font-semibold mt-2">Peringatan komunitas</h3><p class="text-xs muted mt-1 leading-relaxed">Laporan terverifikasi menjadi referensi kewaspadaan pengguna lainnya.</p></div>
+   </div>
+  </div>
+  <aside class="panel p-5"><div class="tag text-cyan-300">Trust & safety</div><h2 class="text-xl font-semibold mt-1 text-white">Prinsip publikasi</h2><ul class="space-y-3 mt-5 text-sm"><li class="flex gap-2"><span class="text-emerald-300">✓</span><span>Hanya laporan berstatus <b>verified</b> yang tampil pada pemeriksaan publik.</span></li><li class="flex gap-2"><span class="text-emerald-300">✓</span><span>Identitas pelapor tidak ditampilkan kepada publik.</span></li><li class="flex gap-2"><span class="text-emerald-300">✓</span><span>Bukti dan catatan moderasi tidak dibuka sebagai data publik.</span></li><li class="flex gap-2"><span class="text-amber-300">!</span><span>Laporan komunitas bukan putusan hukum atau bukti kesalahan seseorang.</span></li></ul><div class="mt-5 p-3 rounded-xl bg-amber-400/5 border border-amber-300/20 text-xs text-amber-100/80 leading-relaxed">Jangan mengunggah data pribadi sensitif, dokumen identitas, alamat rumah, atau materi ilegal. Gunakan tautan bukti yang aman dan dapat diakses moderator.</div></aside>
+ </section>
+
+ <section id="tab-check" class="tabpage hidden">
+  <div class="panel p-5 sm:p-6 max-w-3xl"><div class="tag text-cyan-300">Community lookup</div><h2 class="text-2xl font-semibold text-white mt-1">Cek laporan ancaman</h2><p class="muted text-sm mt-2">Cari laporan komunitas yang sudah diverifikasi berdasarkan nomor, rekening, email, atau domain.</p>
+   <form id="check-form" class="grid sm:grid-cols-[.65fr_1.35fr] gap-3 mt-5"><div><label class="tag muted block mb-2">Kategori</label><select id="check-category" class="field"><option value="phone">Nomor HP / WhatsApp</option><option value="account">Rekening bank</option><option value="email">Email</option><option value="domain">Domain</option><option value="judol">Website judol</option><option value="phishing">Phishing</option></select></div><div><label class="tag muted block mb-2">Identifier</label><input id="check-identifier" class="field" placeholder="Masukkan nomor, email, atau domain" required maxlength="180"></div><button class="btn sm:col-span-2 justify-self-start" type="submit">Cari di database komunitas →</button></form>
+   <div id="check-output" class="mt-5"></div>
+  </div>
+ </section>
+
+ <section id="tab-report" class="tabpage hidden">
+  <div class="panel p-5 sm:p-6 max-w-3xl"><div class="tag text-cyan-300">Community contribution</div><h2 class="text-2xl font-semibold text-white mt-1">Kirim laporan ancaman</h2><p class="muted text-sm mt-2">Laporan hanya dapat dikirim oleh pengguna yang sudah login. Semua laporan masuk antrean moderasi.</p>
+   <form id="report-form" class="grid sm:grid-cols-2 gap-3 mt-5">
+    <div><label class="tag muted block mb-2">Kategori laporan</label><select id="report-category" class="field"><option value="phone">Nomor HP / WhatsApp</option><option value="account">Rekening bank</option><option value="email">Email</option><option value="domain">Domain mencurigakan</option><option value="judol">Indikasi website judol</option><option value="phishing">Phishing</option><option value="other">Lainnya</option></select></div>
+    <div><label class="tag muted block mb-2">Identifier / objek</label><input id="report-identifier" class="field" required maxlength="180" placeholder="Nomor, rekening, email, domain"></div>
+    <div class="sm:col-span-2"><label class="tag muted block mb-2">Judul laporan</label><input id="report-title" class="field" required maxlength="120" placeholder="Ringkasan singkat kejadian"></div>
+    <div class="sm:col-span-2"><label class="tag muted block mb-2">Kronologi dan detail</label><textarea id="report-description" class="field min-h-28" required maxlength="2500" placeholder="Jelaskan apa yang terjadi, kapan, dan bagaimana modusnya. Jangan tulis data sensitif yang tidak diperlukan."></textarea></div>
+    <div><label class="tag muted block mb-2">URL bukti (opsional)</label><input id="report-evidence" class="field" type="url" placeholder="https://..."></div>
+    <div><label class="tag muted block mb-2">URL sumber (opsional)</label><input id="report-source" class="field" type="url" placeholder="https://..."></div>
+    <div class="sm:col-span-2 text-xs muted">Dengan mengirim laporan, Anda menyatakan informasi diberikan dengan itikad baik dan memiliki dasar yang sah. Hindari tuduhan tanpa bukti.</div>
+    <button class="btn justify-self-start sm:col-span-2" type="submit">Kirim untuk verifikasi →</button>
+   </form><div id="report-output" class="mt-4"></div>
+  </div>
+ </section>
+
+ <section id="tab-judol" class="tabpage hidden">
+  <div class="panel p-5 sm:p-6 max-w-3xl"><div class="tag text-cyan-300">Public web signal scan</div><h2 class="text-2xl font-semibold text-white mt-1">Judol & website scanner</h2><p class="muted text-sm mt-2">Mencari indikasi keyword terkait perjudian pada indeks mesin pencari publik untuk sebuah domain.</p>
+   <form id="judol-form" class="mt-5 flex flex-col sm:flex-row gap-3"><input id="judol-domain" class="field" placeholder="contoh.go.id" required><button class="btn shrink-0">Scan domain →</button></form><div id="judol-output" class="mt-5"></div>
+  </div>
+ </section>
+
+ <section id="tab-admin" class="tabpage hidden">
+  <div class="panel p-5 sm:p-6"><div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3"><div><div class="tag text-cyan-300">Restricted access</div><h2 class="text-2xl font-semibold text-white mt-1">Verification Center</h2><p class="muted text-sm mt-1">Masukkan admin API key yang disimpan sebagai environment variable Netlify.</p></div><button id="admin-refresh" class="border border-line rounded-lg px-3 py-2 text-sm">Refresh queue</button></div>
+   <div class="flex flex-col sm:flex-row gap-2 mt-4"><input id="admin-key" type="password" class="field" placeholder="ADMIN_API_KEY"><button id="admin-connect" class="btn shrink-0">Buka antrean</button></div><div id="admin-output" class="mt-5"></div>
+  </div>
+ </section>
+ <footer class="py-8 text-center text-xs text-slate-600">NAWASIBER · Community-Driven Public Cyber Safety Intelligence · Prototype v1.0</footer>
+</main>
+
+<div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm p-4 grid place-items-center">
+ <div class="panel p-6 w-full max-w-md relative"><button id="auth-close" class="absolute right-4 top-4 text-slate-500 text-xl">×</button><div class="tag text-cyan-300">Community account</div><h2 class="text-2xl font-bold text-white mt-1">Selamat datang</h2><p class="muted text-sm mt-2">Masuk atau buat akun untuk berkontribusi.</p>
+  <div class="flex gap-2 mt-5"><button id="mode-login" class="navbtn active">Masuk</button><button id="mode-register" class="navbtn">Daftar</button></div>
+  <form id="auth-form" class="space-y-3 mt-4"><input id="auth-email" type="email" class="field" placeholder="Email" required><input id="auth-password" type="password" class="field" placeholder="Password (minimal 8 karakter)" minlength="8" required><button id="auth-submit" class="btn w-full">Masuk</button></form><div id="auth-output" class="text-xs mt-3"></div>
+ </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let accessToken=sessionStorage.getItem("nw_token")||"";
+let adminKey=sessionStorage.getItem("nw_admin")||"";
+let authMode="login";
+function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function message(el,text,kind="info"){el.innerHTML=`<div class="rounded-xl p-3 text-sm ${kind==="error"?"bg-rose-400/10 border border-rose-400/20 text-rose-200":kind==="ok"?"bg-emerald-400/10 border border-emerald-400/20 text-emerald-200":"bg-cyan-400/5 border border-cyan-400/20 text-cyan-100"}">${esc(text)}</div>`;}
+async function api(action,data={},headers={}){const r=await fetch("/api/dispatch",{method:"POST",headers:{"content-type":"application/json",...(accessToken?{authorization:`Bearer ${accessToken}`}:{ }),...headers},body:JSON.stringify({action,...data})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||"Request gagal");return j;}
+function go(tab){document.querySelectorAll(".tabpage").forEach(x=>x.classList.add("hidden"));$("tab-"+tab).classList.remove("hidden");document.querySelectorAll(".navbtn[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab===tab));}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.tab)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.go)));
+function updateSession(){const logged=!!accessToken;$("session-label").textContent=logged?"Signed in community member":"Guest session";$("auth-open").classList.toggle("hidden",logged);$("logout").classList.toggle("hidden",!logged);}
+$("auth-open").onclick=()=>$("auth-modal").classList.remove("hidden");$("auth-close").onclick=()=>$("auth-modal").classList.add("hidden");
+$("logout").onclick=()=>{accessToken="";sessionStorage.removeItem("nw_token");updateSession();message($("report-output"),"Anda telah keluar.","ok");};
+$("mode-login").onclick=()=>setAuthMode("login");$("mode-register").onclick=()=>setAuthMode("register");
+function setAuthMode(m){authMode=m;$("mode-login").classList.toggle("active",m==="login");$("mode-register").classList.toggle("active",m==="register");$("auth-submit").textContent=m==="login"?"Masuk":"Buat akun";}
+$("auth-form").onsubmit=async e=>{e.preventDefault();$("auth-output").textContent="Memproses...";try{const j=await api(authMode,{email:$("auth-email").value,password:$("auth-password").value});if(j.session?.access_token){accessToken=j.session.access_token;sessionStorage.setItem("nw_token",accessToken);updateSession();$("auth-modal").classList.add("hidden");message($("report-output"),j.message,"ok");}else{$("auth-output").textContent=j.message||"Pendaftaran berhasil. Periksa email untuk verifikasi jika diminta.";}}catch(err){$("auth-output").textContent=err.message;}};
+$("check-form").onsubmit=async e=>{e.preventDefault();const out=$("check-output");out.textContent="Mencari...";try{const j=await api("check",{category:$("check-category").value,identifier:$("check-identifier").value});out.innerHTML=`<div class="rounded-xl border border-line bg-ink p-4"><div class="flex justify-between gap-3"><b class="text-white">${j.match_count? "Laporan komunitas ditemukan":"Belum ada laporan terverifikasi"}</b><span class="text-xs ${j.match_count?"text-amber-300":"text-emerald-300"}">${j.match_count?"SIGNAL FOUND":"NO VERIFIED SIGNAL"}</span></div><p class="muted text-xs mt-2">${esc(j.note)}</p><div class="mt-4 space-y-2">${j.matches.map(x=>`<article class="border-t border-line pt-3"><div class="font-semibold text-sm">${esc(x.title)}</div><div class="text-xs muted mt-1">${esc(x.category)} · ${esc(x.severity)} · ${new Date(x.reviewed_at||x.created_at).toLocaleDateString("id-ID")}</div><p class="text-sm text-slate-400 mt-2">${esc(x.description)}</p></article>`).join("")}</div></div>`;}catch(err){message(out,err.message,"error");}};
+$("report-form").onsubmit=async e=>{e.preventDefault();const out=$("report-output");if(!accessToken){message(out,"Silakan masuk atau daftar terlebih dahulu.","error");$("auth-modal").classList.remove("hidden");return;}message(out,"Mengirim laporan...");try{const j=await api("submit_report",{category:$("report-category").value,identifier:$("report-identifier").value,title:$("report-title").value,description:$("report-description").value,evidence_url:$("report-evidence").value,source_url:$("report-source").value});message(out,j.message,"ok");$("report-form").reset();}catch(err){message(out,err.message,"error");}};
+$("judol-form").onsubmit=async e=>{e.preventDefault();const out=$("judol-output");message(out,"Scanner pencarian indeks publik tersedia pada endpoint recon terpisah. Modul scan penuh akan diaktifkan pada iterasi integrasi search provider.","info");};
+async function loadStats(){try{const j=await api("stats");const s=j.stats;$("stat-total").textContent=s.verified_total;$("stat-identity").textContent=(s.by_category.phone||0)+(s.by_category.account||0)+(s.by_category.email||0);$("stat-web").textContent=(s.by_category.domain||0)+(s.by_category.judol||0)+(s.by_category.phishing||0);}catch{$("stat-total").textContent="—";}}
+async function loadAdmin(){const out=$("admin-output");try{const j=await api("admin_queue",{},{"x-admin-key":$("admin-key").value||adminKey});adminKey=$("admin-key").value||adminKey;sessionStorage.setItem("nw_admin",adminKey);if(!j.reports.length){message(out,"Tidak ada laporan yang menunggu moderasi.","ok");return;}out.innerHTML=`<div class="space-y-3">${j.reports.map(r=>`<article class="rounded-xl border border-line bg-ink p-4" data-id="${esc(r.id)}"><div class="flex flex-wrap justify-between gap-2"><b>${esc(r.title)}</b><span class="text-xs text-amber-300">${esc(r.status)}</span></div><div class="text-xs muted mt-1">${esc(r.category)} · ${esc(r.identifier)} · ${new Date(r.created_at).toLocaleString("id-ID")}</div><p class="text-sm text-slate-400 mt-3">${esc(r.description)}</p>${r.evidence_url?`<a class="text-xs text-cyan-300 underline" target="_blank" rel="noopener" href="${esc(r.evidence_url)}">Buka bukti</a>`:""}<div class="grid sm:grid-cols-[1fr_1fr_2fr_auto] gap-2 mt-3"><select class="field status"><option value="review">Review</option><option value="verified">Verified</option><option value="rejected">Rejected</option></select><select class="field severity"><option value="unassessed">Unassessed</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><input class="field note" placeholder="Catatan moderator"><button class="btn save-review">Simpan</button></div></article>`).join("")}</div>`;out.querySelectorAll(".save-review").forEach(b=>b.onclick=async()=>{const card=b.closest("[data-id]");b.disabled=true;try{await api("admin_review",{id:card.dataset.id,status:card.querySelector(".status").value,severity:card.querySelector(".severity").value,admin_note:card.querySelector(".note").value},{"x-admin-key":adminKey});message(out,"Moderasi tersimpan.","ok");await loadAdmin();await loadStats();}catch(err){alert(err.message);b.disabled=false;}});}catch(err){message(out,err.message,"error");}}
+$("admin-connect").onclick=loadAdmin;$("admin-refresh").onclick=loadAdmin;updateSession();loadStats();
+</script>
+</body></html>
