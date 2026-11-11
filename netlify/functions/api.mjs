@@ -54,6 +54,35 @@ async function supabase(path, options = {}) {
   }
   return data;
 }
+// Seperti supabase(), tapi juga mengembalikan total baris (dari header Content-Range)
+async function supabaseWithCount(path) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Backend belum dikonfigurasi. Isi environment variables Supabase di Netlify.");
+  }
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      Prefer: "count=exact",
+    },
+    signal: AbortSignal.timeout(10000),
+  });
+  const text = await response.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  if (!response.ok) throw new Error(data?.message || `Supabase error ${response.status}`);
+  const range = response.headers.get("content-range") || ""; // contoh: "0-9/123" atau "*/0"
+  const total = parseInt(range.split("/")[1], 10);
+  return { rows: data || [], total: Number.isFinite(total) ? total : (data || []).length };
+}
+const GROUPS = {
+  identity: ["phone", "account", "email"],
+  web: ["domain", "judol", "phishing"],
+};
+// Buang karakter yang punya arti khusus di filter PostgREST / LIKE
+function cleanSearch(q) {
+  return String(q || "").trim().toLowerCase().replace(/[,()*%_\\:"']/g, " ").replace(/\s+/g, " ").slice(0, 80).trim();
+}
 async function getUser(token) {
   if (!token || !SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
@@ -143,6 +172,36 @@ async function handle(request) {
       note:matches?.length
         ? "Ditemukan laporan komunitas yang telah melalui proses moderasi. Ini bukan putusan hukum atau bukti bahwa pemilik identifier bersalah."
         : "Belum ditemukan laporan komunitas terverifikasi. Tidak berarti identifier ini pasti aman."
+    });
+  }
+
+  if (action === "list") {
+    // Daftar publik laporan verified: pagination + filter kategori + pencarian
+    const pageSize = Math.min(Math.max(parseInt(body.page_size, 10) || 10, 1), 30);
+    const page = Math.max(parseInt(body.page, 10) || 1, 1);
+    const offset = (page - 1) * pageSize;
+    const category = String(body.category || "");
+    const group = String(body.group || "");
+    const q = cleanSearch(body.q);
+
+    let filter = "status=eq.verified";
+    if (category && category !== "all") {
+      if (!validCategory(category)) return reply({ok:false,error:"Kategori tidak valid."},400);
+      filter += `&category=eq.${category}`;
+    } else if (GROUPS[group]) {
+      filter += `&category=in.(${GROUPS[group].join(",")})`;
+    }
+    if (q) {
+      const digits = q.replace(/[^\d+]/g, "");
+      const parts = [`title.ilike.*${q}*`, `identifier_normalized.ilike.*${q}*`];
+      if (digits.length >= 3 && digits !== q) parts.push(`identifier_normalized.ilike.*${digits}*`);
+      filter += `&or=(${parts.join(",")})`;
+    }
+    const path = `/rest/v1/reports?select=id,category,identifier,title,description,severity,created_at,reviewed_at&${filter}&order=reviewed_at.desc.nullslast,created_at.desc&limit=${pageSize}&offset=${offset}`;
+    const { rows, total } = await supabaseWithCount(path);
+    return reply({
+      ok:true, items:rows, total, page, page_size:pageSize,
+      total_pages:Math.max(Math.ceil(total / pageSize), 1),
     });
   }
 

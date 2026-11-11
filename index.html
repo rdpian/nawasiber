@@ -19,6 +19,16 @@ body{background:radial-gradient(ellipse at 85% -5%,rgba(8,145,178,.17),transpare
 .navbtn.active{background:#0c2537;border-color:#155e75;color:#7dd3fc}
 .muted{color:#94a3b8}.tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase}
 .hidden{display:none!important}
+.chip{padding:7px 13px;border:1px solid #263449;border-radius:999px;color:#94a3b8;font-size:12px}
+.chip:hover{border-color:#38bdf88a}
+.chip.active{background:#0c2537;border-color:#155e75;color:#7dd3fc}
+.pgbtn{min-width:38px;height:38px;padding:0 11px;border:1px solid #263449;border-radius:10px;color:#cbd5e1;font-size:13px}
+.pgbtn:hover:not(:disabled){border-color:#38bdf88a}
+.pgbtn.active{background:#0c2537;border-color:#38bdf8;color:#7dd3fc;font-weight:700}
+.pgbtn:disabled{opacity:.35;cursor:not-allowed}
+.sev-high{color:#fda4af;border-color:#fb718533;background:#fb71850f}.sev-medium{color:#fcd34d;border-color:#fbbf2433;background:#fbbf240f}.sev-low{color:#86efac;border-color:#4ade8033;background:#4ade800f}.sev-unassessed{color:#94a3b8;border-color:#47556933;background:#4755690f}
+.skel{height:112px;border-radius:14px;background:linear-gradient(90deg,#0b1220,#131d30,#0b1220);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
 </style>
 </head>
 <body class="min-h-screen text-slate-200 gridbg">
@@ -45,10 +55,22 @@ body{background:radial-gradient(ellipse at 85% -5%,rgba(8,145,178,.17),transpare
  </section>
 
  <nav class="panel p-2 flex flex-wrap gap-1 mb-5">
-  <button class="navbtn active" data-tab="overview">◈ Overview</button><button class="navbtn" data-tab="check">⌕ Cek Ancaman</button><button class="navbtn" data-tab="report">＋ Laporkan</button><button class="navbtn" data-tab="judol">⌁ Judol Scanner</button><button class="navbtn" data-tab="admin">⚙ Verification Center</button>
+  <button class="navbtn active" data-tab="overview">◈ Beranda</button><button class="navbtn" data-tab="check">⌕ Cek Ancaman</button><button class="navbtn" data-tab="report">＋ Laporkan</button><button class="navbtn" data-tab="judol">⌁ Judol Scanner</button><button class="navbtn" data-tab="admin">⚙ Verification Center</button>
  </nav>
 
  <section id="tab-overview" class="tabpage grid lg:grid-cols-[1.3fr_.7fr] gap-5">
+  <div class="panel p-5 sm:p-6 lg:col-span-2" id="threat-list-panel">
+   <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+    <div><div class="tag text-cyan-300">Daftar ancaman terverifikasi</div><h2 class="text-xl font-semibold text-white mt-1">Ancaman terbaru dari komunitas</h2><p class="muted text-xs mt-1">Nomor HP, rekening, email, dan website. Langsung tampil, tidak perlu mencari dulu.</p></div>
+    <form id="list-search-form" class="flex gap-2 w-full lg:w-[420px]"><input id="list-search" class="field" placeholder="Cari nomor, domain, atau judul…" maxlength="80" autocomplete="off"><button class="btn shrink-0" type="submit">Cari</button><button id="list-clear" type="button" class="hidden border border-line rounded-xl px-3 text-sm muted">Reset</button></form>
+   </div>
+   <div id="list-filters" class="flex flex-wrap gap-1.5 mt-4">
+    <button class="chip active" data-cat="all">Semua</button><button class="chip" data-cat="phone">Nomor HP</button><button class="chip" data-cat="account">Rekening</button><button class="chip" data-cat="email">Email</button><button class="chip" data-cat="domain">Domain</button><button class="chip" data-cat="judol">Judol</button><button class="chip" data-cat="phishing">Phishing</button><button class="chip" data-cat="other">Lainnya</button>
+   </div>
+   <div id="list-meta" class="text-xs text-slate-500 mt-4 min-h-[1rem]"></div>
+   <div id="list-items" class="mt-3 grid md:grid-cols-2 gap-3" aria-live="polite"></div>
+   <nav id="list-pager" class="mt-5 flex flex-wrap items-center justify-center gap-1.5" aria-label="Pagination"></nav>
+  </div>
   <div class="panel p-5 sm:p-6"><div class="flex justify-between items-center"><div><div class="tag text-cyan-300">Public intelligence</div><h2 class="text-xl font-semibold text-white mt-1">Bagaimana Nawasiber bekerja</h2></div><span class="text-xs text-emerald-300 border border-emerald-400/20 bg-emerald-400/5 rounded-full px-3 py-1">Community model</span></div>
    <div class="grid sm:grid-cols-2 gap-3 mt-5">
     <div class="rounded-xl bg-ink border border-line p-4"><div class="text-cyan-300 text-xl">01 / Detect</div><h3 class="font-semibold mt-2">Temukan indikasi</h3><p class="text-xs muted mt-1 leading-relaxed">Cek identifier atau scan domain untuk menemukan sinyal awal dari sumber publik.</p></div>
@@ -123,7 +145,46 @@ $("check-form").onsubmit=async e=>{e.preventDefault();const out=$("check-output"
 $("report-form").onsubmit=async e=>{e.preventDefault();const out=$("report-output");if(!accessToken){message(out,"Silakan masuk atau daftar terlebih dahulu.","error");$("auth-modal").classList.remove("hidden");return;}message(out,"Mengirim laporan...");try{const j=await api("submit_report",{category:$("report-category").value,identifier:$("report-identifier").value,title:$("report-title").value,description:$("report-description").value,evidence_url:$("report-evidence").value,source_url:$("report-source").value});message(out,j.message,"ok");$("report-form").reset();}catch(err){message(out,err.message,"error");}};
 $("judol-form").onsubmit=async e=>{e.preventDefault();const out=$("judol-output");message(out,"Scanner pencarian indeks publik tersedia pada endpoint recon terpisah. Modul scan penuh akan diaktifkan pada iterasi integrasi search provider.","info");};
 async function loadStats(){try{const j=await api("stats");const s=j.stats;$("stat-total").textContent=s.verified_total;$("stat-identity").textContent=(s.by_category.phone||0)+(s.by_category.account||0)+(s.by_category.email||0);$("stat-web").textContent=(s.by_category.domain||0)+(s.by_category.judol||0)+(s.by_category.phishing||0);}catch{$("stat-total").textContent="—";}}
-async function loadAdmin(){const out=$("admin-output");try{const j=await api("admin_queue",{},{"x-admin-key":$("admin-key").value||adminKey});adminKey=$("admin-key").value||adminKey;sessionStorage.setItem("nw_admin",adminKey);if(!j.reports.length){message(out,"Tidak ada laporan yang menunggu moderasi.","ok");return;}out.innerHTML=`<div class="space-y-3">${j.reports.map(r=>`<article class="rounded-xl border border-line bg-ink p-4" data-id="${esc(r.id)}"><div class="flex flex-wrap justify-between gap-2"><b>${esc(r.title)}</b><span class="text-xs text-amber-300">${esc(r.status)}</span></div><div class="text-xs muted mt-1">${esc(r.category)} · ${esc(r.identifier)} · ${new Date(r.created_at).toLocaleString("id-ID")}</div><p class="text-sm text-slate-400 mt-3">${esc(r.description)}</p>${r.evidence_url?`<a class="text-xs text-cyan-300 underline" target="_blank" rel="noopener" href="${esc(r.evidence_url)}">Buka bukti</a>`:""}<div class="grid sm:grid-cols-[1fr_1fr_2fr_auto] gap-2 mt-3"><select class="field status"><option value="review">Review</option><option value="verified">Verified</option><option value="rejected">Rejected</option></select><select class="field severity"><option value="unassessed">Unassessed</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><input class="field note" placeholder="Catatan moderator"><button class="btn save-review">Simpan</button></div></article>`).join("")}</div>`;out.querySelectorAll(".save-review").forEach(b=>b.onclick=async()=>{const card=b.closest("[data-id]");b.disabled=true;try{await api("admin_review",{id:card.dataset.id,status:card.querySelector(".status").value,severity:card.querySelector(".severity").value,admin_note:card.querySelector(".note").value},{"x-admin-key":adminKey});message(out,"Moderasi tersimpan.","ok");await loadAdmin();await loadStats();}catch(err){alert(err.message);b.disabled=false;}});}catch(err){message(out,err.message,"error");}}
-$("admin-connect").onclick=loadAdmin;$("admin-refresh").onclick=loadAdmin;updateSession();loadStats();
+async function loadAdmin(){const out=$("admin-output");try{const j=await api("admin_queue",{},{"x-admin-key":$("admin-key").value||adminKey});adminKey=$("admin-key").value||adminKey;sessionStorage.setItem("nw_admin",adminKey);if(!j.reports.length){message(out,"Tidak ada laporan yang menunggu moderasi.","ok");return;}out.innerHTML=`<div class="space-y-3">${j.reports.map(r=>`<article class="rounded-xl border border-line bg-ink p-4" data-id="${esc(r.id)}"><div class="flex flex-wrap justify-between gap-2"><b>${esc(r.title)}</b><span class="text-xs text-amber-300">${esc(r.status)}</span></div><div class="text-xs muted mt-1">${esc(r.category)} · ${esc(r.identifier)} · ${new Date(r.created_at).toLocaleString("id-ID")}</div><p class="text-sm text-slate-400 mt-3">${esc(r.description)}</p>${r.evidence_url?`<a class="text-xs text-cyan-300 underline" target="_blank" rel="noopener" href="${esc(r.evidence_url)}">Buka bukti</a>`:""}<div class="grid sm:grid-cols-[1fr_1fr_2fr_auto] gap-2 mt-3"><select class="field status"><option value="review">Review</option><option value="verified">Verified</option><option value="rejected">Rejected</option></select><select class="field severity"><option value="unassessed">Unassessed</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><input class="field note" placeholder="Catatan moderator"><button class="btn save-review">Simpan</button></div></article>`).join("")}</div>`;out.querySelectorAll(".save-review").forEach(b=>b.onclick=async()=>{const card=b.closest("[data-id]");b.disabled=true;try{await api("admin_review",{id:card.dataset.id,status:card.querySelector(".status").value,severity:card.querySelector(".severity").value,admin_note:card.querySelector(".note").value},{"x-admin-key":adminKey});message(out,"Moderasi tersimpan.","ok");await loadAdmin();await loadStats();loadList();}catch(err){alert(err.message);b.disabled=false;}});}catch(err){message(out,err.message,"error");}}
+/* ===== Daftar ancaman di beranda (pagination + filter + search) ===== */
+const CAT_LABEL={phone:"Nomor HP",account:"Rekening",email:"Email",domain:"Domain",judol:"Judol",phishing:"Phishing",other:"Lainnya"};
+const CAT_ICON={phone:"☎",account:"▤",email:"✉",domain:"◎",judol:"⌁",phishing:"⚠",other:"•"};
+const listState={page:1,category:"all",q:"",pageSize:10,total:0,totalPages:1,seq:0};
+function threatCard(x){
+ const sev=x.severity||"unassessed";const d=new Date(x.reviewed_at||x.created_at).toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+ return `<article class="rounded-xl border border-line bg-ink p-4 flex flex-col gap-2"><div class="flex items-center justify-between gap-2"><span class="text-xs text-cyan-300">${CAT_ICON[x.category]||"•"} ${esc(CAT_LABEL[x.category]||x.category)}</span><span class="text-[10px] uppercase tracking-wider border rounded-full px-2 py-0.5 sev-${esc(sev)}">${esc(sev==="unassessed"?"belum dinilai":sev)}</span></div><div class="font-mono text-sm text-white break-all">${esc(x.identifier)}</div><div class="text-sm font-semibold text-slate-200">${esc(x.title)}</div><p class="text-xs text-slate-400 leading-relaxed line-clamp-2">${esc(x.description)}</p><div class="text-[11px] text-slate-500 mt-auto pt-1">Diverifikasi ${d}</div></article>`;
+}
+function pageNumbers(cur,total){
+ if(total<=7)return Array.from({length:total},(_,i)=>i+1);
+ const s=new Set([1,total,cur,cur-1,cur+1]);if(cur<=3){s.add(2);s.add(3);s.add(4);}if(cur>=total-2){s.add(total-1);s.add(total-2);s.add(total-3);}
+ const a=[...s].filter(n=>n>=1&&n<=total).sort((x,y)=>x-y);const out=[];a.forEach((n,i)=>{if(i&&n-a[i-1]>1)out.push("…");out.push(n);});return out;
+}
+function renderPager(){
+ const {page,totalPages}=listState;const el=$("list-pager");
+ if(totalPages<=1){el.innerHTML="";return;}
+ el.innerHTML=`<button class="pgbtn" data-p="${page-1}" ${page<=1?"disabled":""}>‹ Sebelumnya</button>`+pageNumbers(page,totalPages).map(n=>n==="…"?`<span class="px-1 text-slate-600">…</span>`:`<button class="pgbtn ${n===page?"active":""}" data-p="${n}" ${n===page?'aria-current="page"':""}>${n}</button>`).join("")+`<button class="pgbtn" data-p="${page+1}" ${page>=totalPages?"disabled":""}>Berikutnya ›</button>`;
+ el.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{if(b.disabled)return;listState.page=+b.dataset.p;loadList(true);});
+}
+async function loadList(scroll=false){
+ const seq=++listState.seq;const items=$("list-items"),meta=$("list-meta");
+ items.innerHTML=Array.from({length:4},()=>'<div class="skel"></div>').join("");
+ try{
+  const j=await api("list",{page:listState.page,page_size:listState.pageSize,category:listState.category,q:listState.q});
+  if(seq!==listState.seq)return; // abaikan respons lama
+  listState.total=j.total;listState.totalPages=j.total_pages;
+  if(listState.page>j.total_pages&&j.total>0){listState.page=j.total_pages;return loadList();}
+  const from=j.total?(j.page-1)*j.page_size+1:0,to=(j.page-1)*j.page_size+j.items.length;
+  meta.textContent=j.total?`Menampilkan ${from}–${to} dari ${j.total} laporan terverifikasi${listState.q?` untuk “${listState.q}”`:""}`:"";
+  items.innerHTML=j.items.length?j.items.map(threatCard).join(""):`<div class="md:col-span-2 rounded-xl border border-dashed border-line p-8 text-center text-sm muted">${listState.q||listState.category!=="all"?"Tidak ada laporan terverifikasi yang cocok. Coba kata kunci atau kategori lain.":"Belum ada laporan terverifikasi."}</div>`;
+  renderPager();
+  if(scroll)$("threat-list-panel").scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(err){if(seq!==listState.seq)return;meta.textContent="";$("list-pager").innerHTML="";items.innerHTML=`<div class="md:col-span-2"></div>`;message(items.firstElementChild,err.message,"error");}
+}
+function applyListFilters(){listState.page=1;$("list-clear").classList.toggle("hidden",!(listState.q||listState.category!=="all"));loadList();}
+document.querySelectorAll("#list-filters [data-cat]").forEach(b=>b.onclick=()=>{listState.category=b.dataset.cat;document.querySelectorAll("#list-filters .chip").forEach(c=>c.classList.toggle("active",c===b));applyListFilters();});
+$("list-search-form").onsubmit=e=>{e.preventDefault();listState.q=$("list-search").value.trim();applyListFilters();};
+let searchTimer;$("list-search").addEventListener("input",()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>{const v=$("list-search").value.trim();if(v!==listState.q){listState.q=v;applyListFilters();}},450);});
+$("list-clear").onclick=()=>{$("list-search").value="";listState.q="";listState.category="all";document.querySelectorAll("#list-filters .chip").forEach(c=>c.classList.toggle("active",c.dataset.cat==="all"));applyListFilters();};
+$("admin-connect").onclick=loadAdmin;$("admin-refresh").onclick=loadAdmin;updateSession();loadStats();loadList();
 </script>
 </body></html>
